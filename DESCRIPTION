@@ -1,11 +1,30 @@
 Package: rgeopi
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Gather Data from GDOT's GeoPI Database
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: 
+    person("Freyja", "Brandel-Tanis", , "fbrandel-tanis@modernmobilitypartners.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-2870-6980"))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    dplyr,
+    glue,
+    httr2,
+    lubridate,
+    magrittr,
+    polite,
+    purrr,
+    rvest,
+    sf,
+    stringr,
+    tibble,
+    tidyr,
+    tidyselect,
+    vctrs
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
