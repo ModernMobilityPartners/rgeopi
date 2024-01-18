@@ -7,7 +7,7 @@
 get_geopi_sf(gdot_pi)
 }
 \arguments{
-\item{gdot_pi}{GDOT Project ID}
+\item{gdot_pi}{GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row. get_geopi_sf2 can only take a single}
 }
 \value{
 An sf tibble
