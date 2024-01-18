@@ -15,3 +15,8 @@ An sf tibble
 \description{
 Get the spatial geometry of a GDOT project. `get_geopi_sf2` uses the httr2 package.
 }
+\examples{
+\dontrun{
+get_geopi_sf(gdot_pi = "0000820")
+}
+}

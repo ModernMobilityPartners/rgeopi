@@ -17,3 +17,8 @@ A tibble or an sf tibble depending on if geometry is FALSE or TRUE
 \description{
 Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
 }
+\examples{
+\dontrun{
+get_geopi(gdot_pi = "0000820")
+}
+}
