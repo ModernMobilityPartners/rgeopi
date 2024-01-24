@@ -3,5 +3,6 @@
 export("%>%")
 export(cr_check)
 export(get_geopi)
+export(get_geopi_phase)
 export(get_geopi_sf)
 importFrom(magrittr,"%>%")

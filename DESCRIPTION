@@ -11,12 +11,14 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
+    cli,
     dplyr,
     glue,
     httr2,
     lubridate,
     magrittr,
     polite,
+    progress,
     purrr,
     rvest,
     sf,
