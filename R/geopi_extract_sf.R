@@ -12,77 +12,69 @@
 #' get_geopi_sf(gdot_pi = "0000820")
 #' }
 get_geopi_sf <- function(gdot_pi) {
+  req_url <- polite_request("https://rnhp.dot.ga.gov/")
 
-  gdot_pi <- unique(gdot_pi)
+  gdot_pis <- unique(gdot_pi)
 
   all_sf <- purrr::map_dfr(
-    .x = gdot_pi,
-    .f = function(gdot_pi = .x) {
-  req_url <- glue::glue("https://rnhp.dot.ga.gov/hosting/rest/services/GEOPI_APP/MapServer/0/query?f=json&where=PROJECT_ID%3D%27{gpi}%27&returnGeometry=true&spatialRel=esriSpatialRelIntersects", gpi = gdot_pi)
+    .x = gdot_pis,
+    .f = function(gdot_pi = .x){
+      message("Fetching spatial data for PI:", gdot_pi)
+      resp <- req_url %>%
+        httr2::req_url_path("hosting/rest/services/GEOPI_APP/MapServer/0/query") %>%
+        httr2::req_url_query(
+          `f` = "json",
+          `where` = glue::glue("PROJECT_ID=\'{gpi}\'", gpi = gdot_pi),
+          `returnGeometry` = "true",
+          `spatialRel` = "esriSpatialRelIntersects"
+        ) %>%
+        httr2::req_perform()
 
-  message("Fetching spatial data for PI:", gdot_pi)
-
-  gpi_sf <- sf::read_sf(req_url) %>%
-    dplyr::mutate(
-      Project.ID = gdot_pi
-    )
-
-  return(gpi_sf)
+      gpi_sf <- sf::read_sf(resp$url) %>%
+        dplyr::mutate(
+          Project.ID = gdot_pi
+        )
+      return(gpi_sf)
     }) %>%
     dplyr::group_by(Project.ID) %>%
-    dplyr::summarise()
-return(all_sf)
-}
-
-get_geopi_sf2 <- function(gdot_pi) {
-  req_url <- httr2::request("https://rnhp.dot.ga.gov/")
-
-  resp <- req_url %>%
-    httr2::req_url_path("hosting/rest/services/GEOPI_APP/MapServer/0/query") %>%
-    httr2::req_url_query(
-      `f` = "json",
-      `where` = glue::glue("PROJECT_ID=\'{gpi}\'", gpi = gdot_pi),
-      `returnGeometry` = "true",
-      `spatialRel` = "esriSpatialRelIntersects"
-    ) %>%
-    httr2::req_perform()
-
-  gpi_sf <- sf::read_sf(resp$url) %>%
-    dplyr::mutate(
-      Project.ID = gdot_pi
-    ) %>%
-    dplyr::group_by(Project.ID) %>%
-    dplyr::summarise()
-
-  return(gpi_sf)
+    dplyr::summarise()%>%
+    sf::st_cast("MULTILINESTRING")
+  return(all_sf)
 }
 
 polite_request <- polite::politely(httr2::request, verbose = T)
 
-polite_get_geopi_sf2 <- function(gdot_pi) {
+
+polite_get_geopi_sf <- function(gdot_pi) {
   req_url <- polite_request("https://rnhp.dot.ga.gov/")
 
-  resp <- req_url %>%
-    httr2::req_url_path("hosting/rest/services/GEOPI_APP/MapServer/0/query") %>%
-    httr2::req_url_query(
-      `f` = "json",
-      `where` = glue::glue("PROJECT_ID=\'{gpi}\'", gpi = gdot_pi),
-      `returnGeometry` = "true",
-      `spatialRel` = "esriSpatialRelIntersects"
-    ) %>%
-    httr2::req_perform()
+  gdot_pis <- unique(gdot_pi)
 
-  gpi_sf <- sf::read_sf(resp$url) %>%
-    dplyr::mutate(
-      Project.ID = gdot_pi
-    ) %>%
+  all_sf <- purrr::map_dfr(
+    .x = gdot_pis,
+    .f = function(gdot_pi = .x){
+      message("Fetching spatial data for PI:", gdot_pi)
+      resp <- req_url %>%
+        httr2::req_url_path("hosting/rest/services/GEOPI_APP/MapServer/0/query") %>%
+        httr2::req_url_query(
+          `f` = "json",
+          `where` = glue::glue("PROJECT_ID=\'{gpi}\'", gpi = gdot_pi),
+          `returnGeometry` = "true",
+          `spatialRel` = "esriSpatialRelIntersects"
+        ) %>%
+        httr2::req_perform()
+
+      gpi_sf <- sf::read_sf(resp$url) %>%
+        dplyr::mutate(
+          Project.ID = gdot_pi
+        )
+      return(gpi_sf)
+    }) %>%
     dplyr::group_by(Project.ID) %>%
-    dplyr::summarise()
-
-  return(gpi_sf)
+    dplyr::summarise()%>%
+    sf::st_cast("MULTILINESTRING")
+  return(all_sf)
 }
-
-
 
 
 #' Get GeoPI Data
@@ -199,9 +191,19 @@ get_geopi <- function(gdot_pi, geometry = FALSE) {
 }
 
 
-get_geopi_overview <- function(gdot_pi) {
-  session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+#' Title
+#'
+#' @param gdot_pi
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_geopi_overview <- function(gdot_pi, session = NULL) {
 
+  if(is.null(session)){
+  session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+}
   gdot_pi <- unique(gdot_pi)
 
   n_iter <- length(gdot_pi)
