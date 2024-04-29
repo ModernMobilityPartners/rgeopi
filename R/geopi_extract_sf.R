@@ -216,17 +216,19 @@ get_geopi_overview <- function(gdot_pi, session = NULL) {
 #                          clear = FALSE,    # If TRUE, clears the bar when finish
 #                          width = 100)      # Width of the progress bar
 
+  gather_date <- lubridate::today()
+
   geopi_data <- purrr::map_dfr(
     .x = gdot_pi,
     .f = function(gdot_pi = .x) {
+
       # pb$tick
-      gather_date <- lubridate::today()
 
       # message("Fetching project data for PI:", gdot_pi)
 
       # table of project details (location, etc). column 1 and 3 are headings, 2 and 4 are details.
       # row 1 of all columns is the project name
-
+tryCatch({
       project_scrape <- polite::scrape(session, query = list(ProjectId = gdot_pi))
 
       project_overview <- project_scrape %>%
@@ -248,7 +250,7 @@ get_geopi_overview <- function(gdot_pi, session = NULL) {
         dplyr::mutate(
           name = stringr::str_replace(name, ":", ""),
           value = dplyr::case_when(
-            str_detect(value, "^format") ~ stringr::str_extract(value,"(?<=\\').*(?=\\')"),
+            stringr::str_detect(value, "^format") ~ stringr::str_extract(value,"(?<=\\').*(?=\\')"),
             value=="%" ~ "0%",
           .default = value
           )
@@ -260,7 +262,7 @@ get_geopi_overview <- function(gdot_pi, session = NULL) {
         dplyr::mutate(
           dplyr::across(
             .cols = c(Right.of.Way.Authorization, Notice.to.Proceed.Date, Current.Completion.Date, Work.Completion.Date),
-            .fns = \(x) lubridate::parse_date_time(x, orders = c("m/d/Y HMS p"))%>%as_date()
+            .fns = \(x) lubridate::parse_date_time(x, orders = c("m/d/Y HMS p"))%>%lubridate::as_date()
           ),
           Construction.Contract.Amount = as.numeric(Construction.Contract.Amount),
           Gather.Date = gather_date
@@ -285,8 +287,16 @@ get_geopi_overview <- function(gdot_pi, session = NULL) {
           CR.Exists = dplyr::if_else(nrow(document_inclusion[which(document_inclusion$DOC_TYPE == "Approved.Concept.Reports"), ]) > 0, TRUE, FALSE)
         ) %>%
         dplyr::select(Project.ID, tidyselect::everything())
-
       return(project_details_df)
+},
+error = function(cond){
+  message(paste("No content available for PI:", gdot_pi, sep=" "))
+  project_details_df <- tibble::tibble(
+    Project.ID = gdot_pi,
+    Project.Name = "No Content Available"
+  )
+  return(project_details_df)
+})
     },
     .progress = list(
       type = "iterator",
