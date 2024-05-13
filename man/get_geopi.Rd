@@ -27,7 +27,7 @@ get_geopi(
 a list of tibbles
 }
 \description{
-get_geopi
+Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
 }
 \examples{
 \dontrun{

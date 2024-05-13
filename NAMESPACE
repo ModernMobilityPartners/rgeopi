@@ -3,7 +3,6 @@
 export("%>%")
 export(get_geopi)
 export(get_geopi_docs)
-export(get_geopi_old)
 export(get_geopi_overview)
 export(get_geopi_phase)
 export(get_geopi_sf)
