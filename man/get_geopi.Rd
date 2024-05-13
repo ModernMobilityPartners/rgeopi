@@ -2,23 +2,35 @@
 % Please edit documentation in R/geopi_extract_sf.R
 \name{get_geopi}
 \alias{get_geopi}
-\title{Get GeoPI Data}
+\title{get_geopi}
 \usage{
-get_geopi(gdot_pi, geometry = FALSE)
+get_geopi(
+  gdot_pi,
+  session = NULL,
+  features = c("overview", "phases", "documents"),
+  doc_mode = c("cr_only", "cr_check", "doc_summary"),
+  geometry = FALSE
+)
 }
 \arguments{
-\item{gdot_pi}{GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row.}
+\item{gdot_pi}{GDOT Project ID. Can take a list or vector of IDs.}
 
-\item{geometry}{if FALSE (the default), return a regular tibble of GeoPI data. if TRUE, uses the get_geopi_sf function to return an sf tibble with simple feature geometry in the 'geometry' column.}
+\item{session}{If NULL (the default), creates a new session. Can provide a session made with `polite::bow`. In line with polite/ethical scraping, you can use an existing session or the function will create one for you.}
+
+\item{features}{Project features desired to retrieve. Can choose between "overview" (project name, description, etc.), "phases" (phases, their years, and money allocated), and "documents" (information about what documents GeoPI has for the project).}
+
+\item{doc_mode}{If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).}
+
+\item{geometry}{if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.}
 }
 \value{
-A tibble or an sf tibble depending on if geometry is FALSE or TRUE
+a list of tibbles
 }
 \description{
-Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
+get_geopi
 }
 \examples{
 \dontrun{
-get_geopi(gdot_pi = "0000820")
+get_geopi(gdot_pi = "0000820", doc_mode = "cr_check")
 }
 }

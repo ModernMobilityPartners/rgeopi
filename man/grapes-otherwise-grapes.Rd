@@ -15,6 +15,7 @@ lhs \%otherwise\% rhs
 null-coalescing operator. See purr for details.
 }
 \examples{
+\dontrun{
 a \%otherwise\% b
-
+}
 }

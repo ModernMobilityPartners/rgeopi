@@ -9,6 +9,9 @@ guess_basename(x)
 \arguments{
 \item{x}{url to guess filename from}
 }
+\value{
+guessed file name
+}
 \description{
 Guess filename for download from url
 }

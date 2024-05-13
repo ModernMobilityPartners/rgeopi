@@ -41,6 +41,9 @@ polite_download_file(
 
 \item{verbose}{default value is FALSE}
 }
+\value{
+An (invisible) integer code, 0 for success and non-zero for failure.
+}
 \description{
 Polite download
 }

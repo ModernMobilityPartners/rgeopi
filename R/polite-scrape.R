@@ -3,8 +3,9 @@
 #' @param lhs legt hand side
 #' @param rhs right hand side
 #' @examples
+#' \dontrun{
 #' a %otherwise% b
-#'
+#'}
 `%otherwise%` <- function(lhs, rhs) {
   if (!is.null(lhs) && length(lhs) > 0) lhs else rhs
 }
@@ -66,9 +67,6 @@ check_rtxt <-function(url, delay, user_agent, force, verbose){
 #' @param force force re-download of robots.txt
 #' @param verbose default FALSE
 #'
-#' @return
-#'
-#' @examples
 polite_read_html <- memoise::memoise(
                    function(url, ...,
                    delay = 5,
@@ -93,9 +91,8 @@ polite_read_html <- memoise::memoise(
 #'
 #' @param x url to guess filename from
 #'
-#' @return
+#' @return guessed file name
 #'
-#' @examples
 guess_basename <- function(x) {
   destfile <- basename(x)
   if(tools::file_ext(destfile)==""){
@@ -123,9 +120,8 @@ guess_basename <- function(x) {
 #' @param overwrite overwrite downloaded file. Default value FALSE
 #' @param verbose default value is FALSE
 #'
-#' @return
+#' @return An (invisible) integer code, 0 for success and non-zero for failure.
 #'
-#' @examples
 polite_download_file <- memoise::memoise(
                         function(url, destfile=guess_basename(url), ...,
                              quiet=!verbose, mode = "wb", path="downloads/",
@@ -151,3 +147,5 @@ polite_download_file <- memoise::memoise(
   options("HTTPUserAgent"= old_ua)
   destfile
 })
+
+
