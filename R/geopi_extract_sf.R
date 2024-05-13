@@ -354,7 +354,7 @@ get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases"
 
   geopi_results <- list()
 
-  if ("overview") {
+  if ("overview" %in% features) {
     geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session)
   }
 
