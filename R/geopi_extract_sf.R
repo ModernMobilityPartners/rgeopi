@@ -58,7 +58,7 @@ get_geopi_sf <- function(gdot_pi) {
 #' \dontrun{
 #' get_geopi_overview(gdot_pi = "0000820")
 #' }
-get_geopi_overview <- function(gdot_pi, session = NULL) {
+get_geopi_overview <- function(gdot_pi, session = NULL, gather_date=NULL) {
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
     gather_date <- lubridate::today()
@@ -177,7 +177,7 @@ get_geopi_overview <- function(gdot_pi, session = NULL) {
 #' \dontrun{
 #' get_geopi_phase(gdot_pi = "0000820")
 #' }
-get_geopi_phase <- function(gdot_pi, session = NULL) {
+get_geopi_phase <- function(gdot_pi, session = NULL, gather_date=NULL) {
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
     gather_date <- lubridate::today()
@@ -213,17 +213,12 @@ get_geopi_phase <- function(gdot_pi, session = NULL) {
           Project.ID = gdot_pi,
           Gather.Date = gather_date
         ) %>%
-        tidyr::nest(Phase.Details = c(Phase, Program.Year, Date.of.Last.Estimate, Cost.Est.USD))
-
-      project_details_df <- phase_details_clean %>%
-        dplyr::mutate(
-          # Documents.Exists = dplyr::if_else(nrow(document_inclusion) > 0, TRUE, FALSE),
-          CR.Exists = dplyr::if_else(nrow(document_inclusion[which(document_inclusion$DOC_TYPE == "Approved.Concept.Reports"), ]) > 0, TRUE, FALSE)
-        ) %>%
+        tidyr::nest(Phase.Details = c(Phase, Program.Year, Date.of.Last.Estimate, Cost.Est.USD)) %>%
         dplyr::select(Project.ID, tidyselect::everything())
 
 
-      return(project_details_df)
+
+      return(phase_details_clean)
     },
     .progress = list(
       type = "iterator",
@@ -246,13 +241,14 @@ get_geopi_phase <- function(gdot_pi, session = NULL) {
 #' \dontrun{
 #' get_geopi_docs(gdot_pi = "0000820", mode = "cr_check")
 #' }
-get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_check", "doc_summary")) {
+get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_check", "doc_summary"), gather_date=NULL) {
   mode <- rlang::arg_match(mode)
 
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
     gather_date <- lubridate::today()
   }
+
   gdot_pi <- unique(gdot_pi)
 
   geopi_data <- purrr::map_dfr(
@@ -355,16 +351,18 @@ get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases"
   geopi_results <- list()
 
   if ("overview" %in% features) {
-    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session)
+    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session, gather_date=gather_date)
   }
 
   if ("phases" %in% features) {
-    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session)
+    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session, gather_date=gather_date)
   }
   if ("documents" %in% features) {
-    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode)
+    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode, gather_date=gather_date)
   }
   if (geometry == TRUE) {
     geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
   }
+
+  return(geopi_results)
 }
