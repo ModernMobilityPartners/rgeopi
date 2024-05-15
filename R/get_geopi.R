@@ -58,7 +58,7 @@ get_geopi_sf <- function(gdot_pi) {
 #' \dontrun{
 #' get_geopi_overview(gdot_pi = "0000820")
 #' }
-get_geopi_overview <- function(gdot_pi, session = NULL, gather_date=NULL) {
+get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
     gather_date <- lubridate::today()
@@ -177,7 +177,7 @@ get_geopi_overview <- function(gdot_pi, session = NULL, gather_date=NULL) {
 #' \dontrun{
 #' get_geopi_phase(gdot_pi = "0000820")
 #' }
-get_geopi_phase <- function(gdot_pi, session = NULL, gather_date=NULL) {
+get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
     gather_date <- lubridate::today()
@@ -241,7 +241,7 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date=NULL) {
 #' \dontrun{
 #' get_geopi_docs(gdot_pi = "0000820", mode = "cr_check")
 #' }
-get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_check", "doc_summary"), gather_date=NULL) {
+get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_check", "doc_summary"), gather_date = NULL) {
   mode <- rlang::arg_match(mode)
 
   if (is.null(session)) {
@@ -351,14 +351,14 @@ get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases"
   geopi_results <- list()
 
   if ("overview" %in% features) {
-    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session, gather_date=gather_date)
+    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session, gather_date = gather_date)
   }
 
   if ("phases" %in% features) {
-    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session, gather_date=gather_date)
+    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session, gather_date = gather_date)
   }
   if ("documents" %in% features) {
-    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode, gather_date=gather_date)
+    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode, gather_date = gather_date)
   }
   if (geometry == TRUE) {
     geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
