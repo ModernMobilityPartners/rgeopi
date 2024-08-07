@@ -50,6 +50,7 @@ get_geopi_sf <- function(gdot_pi) {
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
+#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
 #'
 #' @return a tibble
 #' @export
@@ -167,8 +168,13 @@ get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
 
 #' Get Project Phase
 #'
+#' Get the Phase ID, Programmed Year, Date of Last Estimate, and Cost Estimate for a Project ID.
+#'
+#' rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare. If the project has more than 50 records, the column "Surplus.Records" is added with the number of total records and pages.
+#'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
+#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
 #'
 #' @return a tibble
 #' @export
@@ -198,9 +204,32 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
 
       # Table of activity / program year / cost estimate / date of estimate
       phase_details <- project_scrape %>%
-        rvest::html_node("#ctl00_ctl51_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46DataGrid_ctl00") %>%
+        rvest::html_node("#ctl00_ctl51_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46DataGrid_ctl00 > tbody") %>%
         rvest::html_table()
+      names(phase_details) <- project_scrape %>%
+        rvest::html_node("#ctl00_ctl51_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46DataGrid_ctl00 > thead") %>%
+        rvest::html_table()%>%
+        names()
 
+      phase_page_count <- project_scrape %>%
+        rvest::html_node("#ctl00_ctl51_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46DataGrid_ctl00 > tfoot > tr > td > table > tbody > tr > td > div.rgWrap.rgInfoPart")%>%
+        rvest::html_text2()%>%
+        str_replace_all("\\r","")%>%
+        str_trim()
+
+
+      if(phase_details[[1,1]]=="There are no items to show in this view."){
+        phase_details_missing <- tibble(
+          Program.Year = NA_integer_,
+          Date.of.Last.Estimate = NA_Date_,
+          Cost.Est.USD = NA_real_,
+          Phase = "No Project Information on GeoPI",
+          Project.ID = gdot_pi,
+          Gather.Date = gather_date
+        ) %>%
+          tidyr::nest(Phase.Details = c(Phase, Program.Year, Date.of.Last.Estimate, Cost.Est.USD)) %>%
+          dplyr::select(Project.ID, tidyselect::everything())
+      }else{
       phase_details_clean <- phase_details %>%
         tibble::as_tibble(.name_repair = ~ vctrs::vec_as_names(..., repair = "universal", quiet = T)) %>%
         dplyr::mutate(
@@ -216,9 +245,15 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
         tidyr::nest(Phase.Details = c(Phase, Program.Year, Date.of.Last.Estimate, Cost.Est.USD)) %>%
         dplyr::select(Project.ID, tidyselect::everything())
 
-
+      if(!is.na(phase_page_count)){
+        phase_details_clean <- phase_details_clean%>%
+          mutate(
+            Surplus.Records = phase_page_count
+          )
+      }
 
       return(phase_details_clean)
+      }
     },
     .progress = list(
       type = "iterator",
@@ -233,6 +268,7 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
 #' @param mode if "cr_only" (the default), returns the filepath and filenames of all approved concept reports. If "cr_check", merely returns T/F for each project if it has a concept report. If "doc_summary", returns the file name, type, and path for all project documents.
+#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
 #'
 #' @return a tibble
 #' @export
@@ -287,6 +323,9 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
           dplyr::mutate(
             Gather.Date = gather_date
           )
+        if(nrow(concept_reports)==0){
+          message("No concept reports found for PI:", gdot_pi)
+        }
         return(concept_reports)
       } else if (mode == "doc_summary") {
         if (nrow(document_inclusion) == 0) {
@@ -296,6 +335,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
             Project.ID = gdot_pi,
             Gather.Date = gather_date
           )
+          message("No documents found for PI:", gdot_pi)
         } else {
           document_df <- document_inclusion %>%
             dplyr::mutate(Project.Documents = stringr::str_replace_all(Project.Documents, "\\s", "\\.")) %>%
@@ -324,6 +364,8 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 #' get_geopi
 #'
 #' Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
+#'
+#' rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare.
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`. In line with polite/ethical scraping, you can use an existing session or the function will create one for you.

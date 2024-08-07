@@ -29,6 +29,9 @@ a list of tibbles
 \description{
 Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
 }
+\details{
+rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare.
+}
 \examples{
 \dontrun{
 get_geopi(gdot_pi = "0000820", doc_mode = "cr_check")
