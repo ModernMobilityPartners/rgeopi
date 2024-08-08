@@ -7,7 +7,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0003-2870-6980")),
     person(, "Modern Mobility Partners, LLC", role = "cph")
   )
-Description: RGeoPI allows the user to easily extract data from GDOT's GeoPI repository. This includes project information, phase years and costs, project geometry, and document information.
+Description: rGeoPI allows the user to easily interface with GDOT's GeoPI repository. This includes project information, phase years and costs, project geometry, and document information, returned in data frames.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
