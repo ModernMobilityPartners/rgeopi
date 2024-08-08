@@ -10,6 +10,8 @@ get_geopi_overview(gdot_pi, session = NULL, gather_date = NULL)
 \item{gdot_pi}{GDOT Project ID. Can take a list or vector of IDs.}
 
 \item{session}{If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.}
+
+\item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
 }
 \value{
 a tibble

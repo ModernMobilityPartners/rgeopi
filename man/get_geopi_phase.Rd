@@ -10,12 +10,17 @@ get_geopi_phase(gdot_pi, session = NULL, gather_date = NULL)
 \item{gdot_pi}{GDOT Project ID. Can take a list or vector of IDs.}
 
 \item{session}{If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.}
+
+\item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
 }
 \value{
 a tibble
 }
 \description{
-Get Project Phase
+Get the Phase ID, Programmed Year, Date of Last Estimate, and Cost Estimate for a Project ID.
+}
+\details{
+rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare. If the project has more than 50 records, the column "Surplus.Records" is added with the number of total records and pages.
 }
 \examples{
 \dontrun{

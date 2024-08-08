@@ -17,6 +17,8 @@ get_geopi_docs(
 \item{session}{If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.}
 
 \item{mode}{if "cr_only" (the default), returns the filepath and filenames of all approved concept reports. If "cr_check", merely returns T/F for each project if it has a concept report. If "doc_summary", returns the file name, type, and path for all project documents.}
+
+\item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
 }
 \value{
 a tibble
