@@ -30,8 +30,8 @@ Imports:
 RoxygenNote: 7.3.1
 Depends: 
     R (>= 2.10)
-URL: https://github.com/freyja-bt/rgeopi
-BugReports: https://github.com/freyja-bt/rgeopi/issues
+URL: https://github.com/ModernMobilityPartners/rgeopi
+BugReports: https://github.com/ModernMobilityPartners/rgeopi/issues
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
