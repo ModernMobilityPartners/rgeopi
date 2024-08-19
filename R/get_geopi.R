@@ -214,14 +214,14 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
       phase_page_count <- project_scrape %>%
         rvest::html_node("#ctl00_ctl51_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46_g_b8d3a566_e67d_4ccb_95d8_24b07c277a46DataGrid_ctl00 > tfoot > tr > td > table > tbody > tr > td > div.rgWrap.rgInfoPart")%>%
         rvest::html_text2()%>%
-        str_replace_all("\\r","")%>%
-        str_trim()
+        stringr::str_replace_all("\\r","")%>%
+        stringr::str_trim()
 
 
-      if(phase_details[[1,1]]=="There are no items to show in this view."){
-        phase_details_missing <- tibble(
+      if(phase_details[[1,1]] %in% c("There are no items to show in this view.","()")){
+        phase_details_missing <- tibble::tibble(
           Program.Year = NA_integer_,
-          Date.of.Last.Estimate = NA_Date_,
+          Date.of.Last.Estimate = lubridate::NA_Date_,
           Cost.Est.USD = NA_real_,
           Phase = "No Project Information on GeoPI",
           Project.ID = gdot_pi,
@@ -247,7 +247,7 @@ get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
 
       if(!is.na(phase_page_count)){
         phase_details_clean <- phase_details_clean%>%
-          mutate(
+          dplyr::mutate(
             Surplus.Records = phase_page_count
           )
       }
