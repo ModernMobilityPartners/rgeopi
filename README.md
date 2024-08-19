@@ -6,8 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-rgeopi exists to extract project information from GDOT’s public-facing
-GeoPI system.
+rgeopi reads project information from GDOT’s public-facing GeoPI system.
 
 ## Installation
 
