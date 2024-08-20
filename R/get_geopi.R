@@ -61,7 +61,8 @@ get_geopi_sf <- function(gdot_pi) {
 #' }
 get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
   if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+  if(is.null(gather_date)){
     gather_date <- lubridate::today()
   }
   gdot_pi <- unique(gdot_pi)
@@ -185,7 +186,8 @@ get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
 #' }
 get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
   if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+  if(is.null(gather_date)){
     gather_date <- lubridate::today()
   }
   gdot_pi <- unique(gdot_pi)
@@ -281,7 +283,8 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
   mode <- rlang::arg_match(mode)
 
   if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+  if(is.null(gather_date)){
     gather_date <- lubridate::today()
   }
 
@@ -372,6 +375,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 #' @param features Project features desired to retrieve. Can choose between "overview" (project name, description, etc.), "phases" (phases, their years, and money allocated), and "documents" (information about what documents GeoPI has for the project).
 #' @param doc_mode If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).
 #' @param geometry if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.
+#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
 #'
 #' @return a list of tibbles
 #' @export
@@ -380,12 +384,13 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 #' \dontrun{
 #' get_geopi(gdot_pi = "0000820", doc_mode = "cr_check")
 #' }
-get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
+get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
 
   doc_mode <- rlang::arg_match(doc_mode)
 
   if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+  if(is.null(gather_date)){
     gather_date <- lubridate::today()
   }
   gdot_pi <- unique(gdot_pi)
