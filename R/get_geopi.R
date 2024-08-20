@@ -317,7 +317,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
           dplyr::filter(Doc.Type == "Approved.Concept.Reports") %>%
           tidyr::separate_wider_regex(
             File.Name,
-            c(Project.ID = "[:digit:]{6,7}-?", "_", File.Type = "[:alpha:]*\\&*[:alpha:]*", "_", File.Date = "[:alnum:]+", "\\.pdf"),
+            c(Project.ID = "[:digit:]{6,7}-?", "[\\s_]+", File.Type = "[:alpha:]*\\&*[:alpha:]*", "[\\s_]+", File.Date = "[:alnum:]+", "\\.pdf"),
             cols_remove = F
           ) %>%
           dplyr::mutate(
