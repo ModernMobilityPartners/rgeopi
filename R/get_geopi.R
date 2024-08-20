@@ -294,13 +294,31 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
     .x = gdot_pi,
     .f = function(gdot_pi = .x) {
       message("Checking CR for PI:", gdot_pi)
-      document_inclusion <- polite::scrape(session, query = list(ProjectId = gdot_pi)) %>%
-        rvest::html_node("#ctl00_ctl51_g_c9069b02_6998_4434_b04d_f108ef5b6961_g_c9069b02_6998_4434_b04d_f108ef5b6961DataGrid_ctl00") %>%
+      doc_scrape <- polite::scrape(session, query = list(ProjectId = gdot_pi))
+
+      document_inclusion <- doc_scrape %>%
+        rvest::html_node("#ctl00_ctl51_g_c9069b02_6998_4434_b04d_f108ef5b6961_g_c9069b02_6998_4434_b04d_f108ef5b6961DataGrid_ctl00 > tbody") %>%
+        rvest::html_table()%>%
+        dplyr::mutate(...1 = NULL, X1 = NULL, dplyr::across(.cols = tidyselect::everything(), .fns = \(x) dplyr::na_if(x, "")))
+
+      names(document_inclusion) <- doc_scrape %>%
+        rvest::html_node("#ctl00_ctl51_g_c9069b02_6998_4434_b04d_f108ef5b6961_g_c9069b02_6998_4434_b04d_f108ef5b6961DataGrid_ctl00 > thead") %>%
         rvest::html_table() %>%
         tibble::as_tibble(.name_repair = ~ vctrs::vec_as_names(..., repair = "universal", quiet = T)) %>%
-        dplyr::mutate(...1 = NULL, dplyr::across(.cols = tidyselect::everything(), .fns = \(x) dplyr::na_if(x, ""))) %>%
+        names()%>%
+        .[-1]
+
+      document_inclusion <- document_inclusion %>%
         tidyr::fill(Project.Documents) %>%
         dplyr::filter(Project.Documents != FILE_PATH)
+
+      if(any(stringr::str_detect(document_inclusion$Project.Documents,"Showing\\s\\d+"))){
+        document_inclusion <- document_inclusion%>%
+          dplyr::mutate(
+            Surplus.Records = stringr::str_extract(Project.Documents,"Showing\\s\\d+\\sof\\s\\d+\\sitems"),
+            Project.Documents = stringr::str_replace(Project.Documents, "\\s\\(Showing \\d+ of \\d+ items\\. Group continues on the next page\\.\\)","")
+          )
+      }
 
       if (mode == "cr_check") {
         cr_tbl <- tibble::tibble(
@@ -321,7 +339,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
           tidyr::separate_wider_regex(
             File.Name,
             c(Project.ID = "[:digit:]{6,7}-?", "[\\s_]+", File.Type = "[:alpha:]*\\&*[:alpha:]*", "[\\s_]+", File.Date = "[:alnum:]+", "\\.pdf"),
-            cols_remove = F
+            cols_remove = F, too_few = "align_start"
           ) %>%
           dplyr::mutate(
             Gather.Date = gather_date
