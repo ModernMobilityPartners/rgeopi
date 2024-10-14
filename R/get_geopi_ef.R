@@ -13,7 +13,13 @@
 #'
 #' @export
 #'
-get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
+get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, pi_check=TRUE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
+
+  if(pi_check & length(gdot_pi)==1){
+    if(check_pi(gdot_pi = gdot_pi)==FALSE){
+      stop(sprintf("PI:%s is not a valid GDOT PI",gdot_pi))
+    }
+  }
 
   doc_mode <- rlang::arg_match(doc_mode)
 

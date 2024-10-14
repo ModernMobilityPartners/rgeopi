@@ -450,36 +450,3 @@ get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases"
 
   return(geopi_results)
 }
-
-
-#' Check if PI is possible based on format
-#'
-#' GDOT PIs are seven character IDs formatted as 1) numbers with leading zeros, 2) six numbers and a "-", and 3) six numbers with a leading M or S. Checks the format to skip running a GeoPI call if the project ID is not possible for the system.
-#'
-#' @param gdot_pi GDOT PI. If not seven digits,
-#'
-#' @return True/False
-#' @export
-#'
-#' @examples
-#' check_pi("0012345")
-#' check_pi("546540-")
-#' check_pi("M023424")
-#' check_pi("FAKE523")
-check_pi <- function(gdot_pi){
-  if(nchar(gdot_pi)!=7){
-    if(is.na(suppressWarnings(as.numeric(gdot_pi)))){
-      return(FALSE)
-    }else{
-    gdot_pi <- sprintf("%07d",as.numeric(gdot_pi))
-  }}
-  if(suppressWarnings(!is.na(as.numeric(gdot_pi))) & substr(gdot_pi,1,1)==0){
-    return(TRUE)
-  }else if(suppressWarnings(!is.na(as.numeric(substr(gdot_pi,1,6)))) & substr(gdot_pi,7,7)=="-"){
-    return(TRUE)
-  }else if(suppressWarnings(!is.na(as.numeric(substr(gdot_pi,2,7)))) & substr(gdot_pi,1,1) %in% c("S","M")){
-    return(TRUE)
-  }else{
-    return(FALSE)
-  }
-}
