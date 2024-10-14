@@ -1,15 +1,65 @@
-#' get_geopi_overview
+#'
+#' @description
+#'   The function `get_geopi_ef` is a more efficient version of `get_geopi` that avoids pinging the GeoPi website excess times. It is a more recent development and may eventually replace `get_geopi`.
+#'
+#' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
+#' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`. In line with polite/ethical scraping, you can use an existing session or the function will create one for you.
+#' @param features Project features desired to retrieve. Can choose between "overview" (project name, description, etc.), "phases" (phases, their years, and money allocated), and "documents" (information about what documents GeoPI has for the project).
+#' @param doc_mode If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).
+#' @param geometry if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.
+#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
+#'
+#' @rdname get_geopi
+#'
+#' @export
+#'
+get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
+
+  doc_mode <- rlang::arg_match(doc_mode)
+
+  if (is.null(session)) {
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+  if(is.null(gather_date)){
+    gather_date <- lubridate::today()
+  }
+  gdot_pi <- unique(gdot_pi)
+
+  page_scrapes <- purrr::map(
+    gdot_pi,
+    ~polite::scrape(session, query = list(ProjectId = .x)),
+    .progress = list(
+      type = "iterator",
+      format = "Loading project pages {cli::pb_bar} {cli::pb_percent}"
+    )
+  )
+
+  geopi_results <- list()
+
+  if ("overview" %in% features) {
+    geopi_results$overview <- get_geopi_overview_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
+  }
+
+  if ("phases" %in% features) {
+    geopi_results$phases <- get_geopi_phase_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
+  }
+  if ("documents" %in% features) {
+    geopi_results$documents <- get_geopi_docs_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, dcmode = doc_mode, gather_date = gather_date)
+  }
+  if (geometry == TRUE) {
+    geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
+  }
+
+  return(geopi_results)
+}
+
+
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
-#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`.
+#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`. Only present in `get_geopi_overview_ef`.
 #'
-#' @return a tibble
+#' @rdname get_geopi_overview
 #'
-#' @examples
-#' \dontrun{
-#' get_geopi_overview_ef(gdot_pi = "0000820")
-#' }
 get_geopi_overview_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
 
   if(is.null(gather_date)){
@@ -80,7 +130,7 @@ get_geopi_overview_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
           return(project_details_df)
         },
         error = function(cond) {
-          message(paste("No content available for PI:", gdot_pi, sep = " "))
+          message(paste("No overview available for PI:", gdot_pi, sep = " "))
           project_details_df <- tibble::tibble(
             Project.ID = gdot_pi,
             Project.Name = "No Content Available"
@@ -98,22 +148,13 @@ get_geopi_overview_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
 }
 
 
-#' Get Project Phase
-#'
-#' Get the Phase ID, Programmed Year, Date of Last Estimate, and Cost Estimate for a Project ID.
-#'
-#' rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare. If the project has more than 50 records, the column "Surplus.Records" is added with the number of total records and pages.
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
-#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`.
+#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`. Only present in `get_geopi_phase_ef`.
 #'
-#' @return a tibble
+#' @rdname get_geopi_phase
 #'
-#' @examples
-#' \dontrun{
-#' get_geopi_phase_ef(gdot_pi = "0000820")
-#' }
 get_geopi_phase_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
 
   if(is.null(gather_date)){
@@ -126,7 +167,7 @@ get_geopi_phase_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
     .x = gdot_pi,
     .y = page_scrape,
     .f = function(gdot_pi = .x, page_scrape = .y) {
-      message("Fetching phase data for PI:", gdot_pi)
+      # message("Fetching phase data for PI:", gdot_pi)
 
       # table of project details (location, etc). column 1 and 3 are headings, 2 and 4 are details.
       # row 1 of all columns is the project name
@@ -148,6 +189,8 @@ get_geopi_phase_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
 
 
       if(phase_details[[1,1]] %in% c("There are no items to show in this view.","()")){
+        message("No phase data for PI:", gdot_pi)
+
         phase_details_missing <- tibble::tibble(
           Program.Year = NA_integer_,
           Date.of.Last.Estimate = lubridate::NA_Date_,
@@ -192,21 +235,16 @@ get_geopi_phase_ef <- function(gdot_pi, page_scrape, gather_date = NULL) {
   return(geopi_data)
 }
 
-#' Check for Concept Reports
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
-#' @param mode if "cr_only" (the default), returns the filepath and filenames of all approved concept reports. If "cr_check", merely returns T/F for each project if it has a concept report. If "doc_summary", returns the file name, type, and path for all project documents.
+#' @param dcmode if "cr_only" (the default), returns the filepath and filenames of all approved concept reports. If "cr_check", merely returns T/F for each project if it has a concept report. If "doc_summary", returns the file name, type, and path for all project documents.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
-#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`.
+#' @param page_scrape Scraped GeoPI Page supplied by `get_geopi_ef`. Only present in `get_geopi_docs_ef`.
 #'
-#' @return a tibble
+#' @rdname get_geopi_docs
 #'
-#' @examples
-#' \dontrun{
-#' get_geopi_docs_ef(gdot_pi = "0000820", mode = "cr_check")
-#' }
-get_geopi_docs_ef <- function(gdot_pi, page_scrape, mode = c("cr_only", "cr_check", "doc_summary"), gather_date = NULL) {
-  mode <- rlang::arg_match(mode)
+get_geopi_docs_ef <- function(gdot_pi, page_scrape, dcmode = c("cr_only", "cr_check", "doc_summary"), gather_date = NULL) {
+  dcmode <- rlang::arg_match(dcmode)
 
   if(is.null(gather_date)){
     gather_date <- lubridate::today()
@@ -242,14 +280,14 @@ get_geopi_docs_ef <- function(gdot_pi, page_scrape, mode = c("cr_only", "cr_chec
           )
       }
 
-      if (mode == "cr_check") {
+      if (dcmode == "cr_check") {
         cr_tbl <- tibble::tibble(
           Project.ID = gdot_pi,
           CR.Exists = dplyr::if_else(nrow(document_inclusion[which(document_inclusion$Project.Documents == "Approved Concept Reports"), ]) > 0, TRUE, FALSE),
           Gather.Date = gather_date
         )
         return(cr_tbl)
-      } else if (mode == "cr_only") {
+      } else if (dcmode == "cr_only") {
         concept_reports <- document_inclusion %>%
           dplyr::mutate(Project.Documents = stringr::str_replace_all(Project.Documents, "\\s", "\\.")) %>%
           dplyr::select(
@@ -270,7 +308,7 @@ get_geopi_docs_ef <- function(gdot_pi, page_scrape, mode = c("cr_only", "cr_chec
           message("No concept reports found for PI:", gdot_pi)
         }
         return(concept_reports)
-      } else if (mode == "doc_summary") {
+      } else if (dcmode == "doc_summary") {
         if (nrow(document_inclusion) == 0) {
           document_df <- tibble::tibble(
             Doc.Type = "No.Documents",
@@ -297,64 +335,8 @@ get_geopi_docs_ef <- function(gdot_pi, page_scrape, mode = c("cr_only", "cr_chec
     },
     .progress = list(
       type = "iterator",
-      format = "Getting project details {cli::pb_bar} {cli::pb_percent}"
+      format = "Getting project document details {cli::pb_bar} {cli::pb_percent}"
     )
   )
   return(geopi_data)
-}
-
-
-#' get_geopi
-#'
-#' Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
-#'
-#' rgeopi can only access the first 50 phase records. Having more than 50 phases for a single project is rare.
-#'
-#' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
-#' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`. In line with polite/ethical scraping, you can use an existing session or the function will create one for you.
-#' @param features Project features desired to retrieve. Can choose between "overview" (project name, description, etc.), "phases" (phases, their years, and money allocated), and "documents" (information about what documents GeoPI has for the project).
-#' @param doc_mode If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).
-#' @param geometry if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.
-#' @param gather_date Date information is gathered from GeoPI. Defaults to today.
-#'
-#' @return a list of tibbles
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' get_geopi_ef(gdot_pi = "0000820", doc_mode = "cr_check")
-#' }
-get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
-
-  doc_mode <- rlang::arg_match(doc_mode)
-
-  if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
-  if(is.null(gather_date)){
-    gather_date <- lubridate::today()
-  }
-  gdot_pi <- unique(gdot_pi)
-
-  page_scrapes <- purrr::map(
-    gdot_pi,
-    ~polite::scrape(session, query = list(ProjectId = .x))
-  )
-
-  geopi_results <- list()
-
-  if ("overview" %in% features) {
-    geopi_results$overview <- get_geopi_overview_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
-  }
-
-  if ("phases" %in% features) {
-    geopi_results$phases <- get_geopi_phase_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
-  }
-  if ("documents" %in% features) {
-    geopi_results$documents <- get_geopi_docs_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, mode = doc_mode, gather_date = gather_date)
-  }
-  if (geometry == TRUE) {
-    geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
-  }
-
-  return(geopi_results)
 }

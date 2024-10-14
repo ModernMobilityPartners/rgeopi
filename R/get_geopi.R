@@ -46,7 +46,10 @@ get_geopi_sf <- function(gdot_pi) {
 }
 
 
-#' get_geopi_overview
+#' Get Project Overview
+#'
+#'
+#'
 #'
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
@@ -382,7 +385,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 }
 
 
-#' get_geopi
+#' Get GeoPI Data
 #'
 #' Get the available GeoPI data for a project. Adds the field `Gather.Date` with the current date to document the date of extraction.
 #'
