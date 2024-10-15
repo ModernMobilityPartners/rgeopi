@@ -11,6 +11,7 @@ get_geopi(
   features = c("overview", "phases", "documents"),
   doc_mode = c("cr_only", "cr_check", "doc_summary"),
   geometry = FALSE,
+  pi_check = TRUE,
   gather_date = NULL
 )
 
@@ -20,6 +21,7 @@ get_geopi_ef(
   features = c("overview", "phases", "documents"),
   doc_mode = c("cr_only", "cr_check", "doc_summary"),
   geometry = FALSE,
+  pi_check = TRUE,
   gather_date = NULL
 )
 }
@@ -33,6 +35,8 @@ get_geopi_ef(
 \item{doc_mode}{If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).}
 
 \item{geometry}{if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.}
+
+\item{pi_check}{Check if the PI is a valid format. Defaults to TRUE.}
 
 \item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
 }

@@ -4,16 +4,18 @@
 \alias{get_geopi_sf}
 \title{Get GeoPI Spatial Data}
 \usage{
-get_geopi_sf(gdot_pi)
+get_geopi_sf(gdot_pi, pi_check = TRUE)
 }
 \arguments{
-\item{gdot_pi}{GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row. get_geopi_sf2 can only take a single}
+\item{gdot_pi}{GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row.}
+
+\item{pi_check}{Check if the PI is a valid format. Defaults to TRUE.}
 }
 \value{
 An sf tibble
 }
 \description{
-Get the spatial geometry of a GDOT project. `get_geopi_sf2` uses the httr2 package.
+Get the spatial geometry of a GDOT project. `get_geopi_sf` uses the httr2 package.
 }
 \examples{
 \dontrun{

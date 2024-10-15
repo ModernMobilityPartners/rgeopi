@@ -9,7 +9,8 @@ get_geopi_docs(
   gdot_pi,
   session = NULL,
   mode = c("cr_only", "cr_check", "doc_summary"),
-  gather_date = NULL
+  gather_date = NULL,
+  pi_check = TRUE
 )
 
 get_geopi_docs_ef(
@@ -27,6 +28,8 @@ get_geopi_docs_ef(
 \item{mode}{if "cr_only" (the default), returns the filepath and filenames of all approved concept reports. If "cr_check", merely returns T/F for each project if it has a concept report. If "doc_summary", returns the file name, type, and path for all project documents.}
 
 \item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
+
+\item{pi_check}{Check if the PI is a valid format. Defaults to TRUE.}
 
 \item{page_scrape}{Scraped GeoPI Page supplied by `get_geopi_ef`. Only present in `get_geopi_docs_ef`.}
 
