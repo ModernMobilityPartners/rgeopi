@@ -21,6 +21,7 @@ get_geopi_ef(
   features = c("overview", "phases", "documents"),
   doc_mode = c("cr_only", "cr_check", "doc_summary"),
   geometry = FALSE,
+  pi_check = TRUE,
   gather_date = NULL
 )
 }

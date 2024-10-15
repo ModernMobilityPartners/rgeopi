@@ -5,7 +5,12 @@
 \alias{get_geopi_overview_ef}
 \title{Get Project Overview}
 \usage{
-get_geopi_overview(gdot_pi, session = NULL, gather_date = NULL)
+get_geopi_overview(
+  gdot_pi,
+  session = NULL,
+  gather_date = NULL,
+  pi_check = TRUE
+)
 
 get_geopi_overview_ef(gdot_pi, page_scrape, gather_date = NULL)
 }
@@ -15,6 +20,8 @@ get_geopi_overview_ef(gdot_pi, page_scrape, gather_date = NULL)
 \item{session}{If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.}
 
 \item{gather_date}{Date information is gathered from GeoPI. Defaults to today.}
+
+\item{pi_check}{Check if the PI is a valid format. Defaults to TRUE.}
 
 \item{page_scrape}{Scraped GeoPI Page supplied by `get_geopi_ef`. Only present in `get_geopi_overview_ef`.}
 }

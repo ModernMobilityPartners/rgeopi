@@ -2,9 +2,10 @@ polite_request <- polite::politely(httr2::request, verbose = F)
 
 #' Get GeoPI Spatial Data
 #'
-#' Get the spatial geometry of a GDOT project. `get_geopi_sf2` uses the httr2 package.
+#' Get the spatial geometry of a GDOT project. `get_geopi_sf` uses the httr2 package.
 #'
-#' @param gdot_pi GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row. get_geopi_sf2 can only take a single
+#' @param gdot_pi GDOT Project ID. Can be a single PI or a vector or list of PIs. If more than one PI is provided, each project will get its own row.
+#' @param pi_check Check if the PI is a valid format. Defaults to TRUE.
 #'
 #' @return An sf tibble
 #' @export
@@ -13,7 +14,22 @@ polite_request <- polite::politely(httr2::request, verbose = F)
 #' \dontrun{
 #' get_geopi_sf(gdot_pi = "0000820")
 #' }
-get_geopi_sf <- function(gdot_pi) {
+get_geopi_sf <- function(gdot_pi, pi_check= TRUE) {
+  if(pi_check){
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+      warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
+    }
+    gdot_pi <- names(pi_review)[pi_review]
+  }
+
+  if(length(gdot_pi)==0){
+    stop("No valid PIs")
+
+  }
+
   req_url <- polite_request("https://rnhp.dot.ga.gov/")
 
   gdot_pis <- unique(gdot_pi)
@@ -54,6 +70,7 @@ get_geopi_sf <- function(gdot_pi) {
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
+#' @param pi_check Check if the PI is a valid format. Defaults to TRUE.
 #'
 #' @return a tibble
 #' @export
@@ -62,7 +79,23 @@ get_geopi_sf <- function(gdot_pi) {
 #' \dontrun{
 #' get_geopi_overview(gdot_pi = "0000820")
 #' }
-get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
+get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL, pi_check = TRUE) {
+
+  if(pi_check){
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+      warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
+    }
+    gdot_pi <- names(pi_review)[pi_review]
+  }
+
+  if(length(gdot_pi)==0){
+    stop("No valid PIs")
+
+  }
+
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
   if(is.null(gather_date)){
@@ -179,6 +212,7 @@ get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
 #' @param gdot_pi GDOT Project ID. Can take a list or vector of IDs.
 #' @param session If NULL (the default), creates a new session. Can provide a session made with `polite::bow`.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
+#' @param pi_check Check if the PI is a valid format. Defaults to TRUE.
 #'
 #' @return a tibble
 #' @export
@@ -187,7 +221,23 @@ get_geopi_overview <- function(gdot_pi, session = NULL, gather_date = NULL) {
 #' \dontrun{
 #' get_geopi_phase(gdot_pi = "0000820")
 #' }
-get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL) {
+get_geopi_phase <- function(gdot_pi, session = NULL, gather_date = NULL, pi_check=TRUE) {
+
+  if(pi_check){
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+      warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
+    }
+    gdot_pi <- names(pi_review)[pi_review]
+  }
+
+  if(length(gdot_pi)==0){
+    stop("No valid PIs")
+
+  }
+
   if (is.null(session)) {
     session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
   if(is.null(gather_date)){
@@ -287,10 +337,18 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
   mode <- rlang::arg_match(mode)
 
   if(pi_check){
-    if(check_pi(gdot_pi = gdot_pi)==FALSE){
-      message(sprintf("PI:%s is not a valid GDOT PI",gdot_pi))
-      return()
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+      warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
     }
+    gdot_pi <- names(pi_review)[pi_review]
+  }
+
+  if(length(gdot_pi)==0){
+    stop("No valid PIs")
+
   }
 
   if (is.null(session)) {
@@ -417,16 +475,26 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, pi_check=TRUE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
 
 
-  if(pi_check & length(gdot_pi)==1){
-    if(check_pi(gdot_pi = gdot_pi)==FALSE){
-      stop(sprintf("PI:%s is not a valid GDOT PI",gdot_pi))
+  if(pi_check){
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+    warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
     }
+    gdot_pi <- names(pi_review)[pi_review]
+  }
+
+  if(length(gdot_pi)==0){
+    stop("No valid PIs")
+
   }
 
   doc_mode <- rlang::arg_match(doc_mode)
 
   if (is.null(session)) {
-    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")}
+    session <- polite::bow("https://www.dot.ga.gov/applications/geopi/Pages/Dashboard.aspx")
+    }
   if(is.null(gather_date)){
     gather_date <- lubridate::today()
   }
@@ -435,17 +503,17 @@ get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases"
   geopi_results <- list()
 
   if ("overview" %in% features) {
-    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session, gather_date = gather_date)
+    geopi_results$overview <- get_geopi_overview(gdot_pi = gdot_pi, session = session, gather_date = gather_date, pi_check = FALSE)
   }
 
   if ("phases" %in% features) {
-    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session, gather_date = gather_date)
+    geopi_results$phases <- get_geopi_phase(gdot_pi = gdot_pi, session = session, gather_date = gather_date, pi_check = FALSE)
   }
   if ("documents" %in% features) {
-    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode, gather_date = gather_date)
+    geopi_results$documents <- get_geopi_docs(gdot_pi = gdot_pi, session = session, mode = doc_mode, gather_date = gather_date, pi_check = FALSE)
   }
   if (geometry == TRUE) {
-    geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
+    geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi, pi_check = FALSE)
   }
 
   return(geopi_results)

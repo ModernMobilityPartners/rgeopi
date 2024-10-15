@@ -8,6 +8,7 @@
 #' @param doc_mode If "documents" is chosen, the doc_mode conveys what information to retrieve. Options are "cr_only" (description of all files under "approved concept reports"), "cr_check" (simple TRUE/FALSE for if the project has approved concept reports), and "doc_summary" (the name, file path, and type of all project documents).
 #' @param geometry if FALSE (the default), do not return spatial date. if TRUE, uses the `get_geopi_sf` function to add a sf tibble named "geometry" to the output list.
 #' @param gather_date Date information is gathered from GeoPI. Defaults to today.
+#' @param pi_check Check if the PI is a valid format. Defaults to TRUE.
 #'
 #' @rdname get_geopi
 #'
@@ -15,10 +16,14 @@
 #'
 get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, pi_check=TRUE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
 
-  if(pi_check & length(gdot_pi)==1){
-    if(check_pi(gdot_pi = gdot_pi)==FALSE){
-      stop(sprintf("PI:%s is not a valid GDOT PI",gdot_pi))
+  if(pi_check){
+    pi_review <- check_pi(gdot_pi)
+
+    invalid <- gdot_pi[!pi_review]
+    if(length(invalid)>0){
+      warning(sprintf("Invalid PI#s: %s",paste(invalid, collapse=", ")))
     }
+    gdot_pi <- names(pi_review)[pi_review]
   }
 
   doc_mode <- rlang::arg_match(doc_mode)
