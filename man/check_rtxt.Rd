@@ -17,6 +17,9 @@ check_rtxt(url, delay, user_agent, force, verbose)
 
 \item{verbose}{logical}
 }
+\value{
+TRUE/FALSE
+}
 \description{
 Function for checking robots.txt file
 }
