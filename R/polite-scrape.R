@@ -16,7 +16,6 @@
 #' @param user_agent user agent string
 #' @param delay default delay
 #' @param verbose logical
-#' @examples
 polite_fetch_rtxt <- memoise::memoise(function(..., user_agent, delay, verbose) {
   rt <- robotstxt::robotstxt(...)
   delay_df <- rt$crawl_delay
@@ -43,8 +42,6 @@ polite_fetch_rtxt <- memoise::memoise(function(..., user_agent, delay, verbose) 
 #' @param verbose logical
 #'
 #' @return
-#'
-#' @examples
 check_rtxt <- function(url, delay, user_agent, force, verbose) {
   url_parsed <- httr::parse_url(url)
   host_url <- paste0(url_parsed$scheme, "://", url_parsed$hostname)

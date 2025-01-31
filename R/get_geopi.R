@@ -474,6 +474,7 @@ get_geopi_docs <- function(gdot_pi, session = NULL, mode = c("cr_only", "cr_chec
 #' }
 get_geopi <- function(gdot_pi, session = NULL, features = c("overview", "phases", "documents"), doc_mode = c("cr_only", "cr_check", "doc_summary"), geometry = FALSE, pi_check=TRUE, gather_date=NULL) { # , output = "by" ## needs an "output" value to change if the results are by PI or by overview/phase/documents
 
+  features <- rlang::arg_match(features, multiple = TRUE)
 
   if(pi_check){
     pi_review <- check_pi(gdot_pi)
