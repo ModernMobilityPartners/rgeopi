@@ -1,7 +1,7 @@
 Package: rgeopi
 Type: Package
 Title: Gather Data from GDOT's GeoPI Database
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person("Freyja", "Brandel-Tanis", , "fbrandel-tanis@modernmobilitypartners.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2870-6980")),
