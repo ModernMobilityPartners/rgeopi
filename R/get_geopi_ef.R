@@ -49,17 +49,17 @@ get_geopi_ef <- function(gdot_pi, session = NULL, features = c("overview", "phas
   geopi_results <- list()
 
   if ("overview" %in% features) {
-    geopi_results$overview <- get_geopi_overview_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
+    geopi_results$overview <- tryCatch(get_geopi_overview_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date), error = function(e) paste("overview", e))
   }
 
   if ("phases" %in% features) {
-    geopi_results$phases <- get_geopi_phase_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date)
+    geopi_results$phases <- tryCatch(get_geopi_phase_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, gather_date = gather_date), error = function(e) paste("phases", e))
   }
   if ("documents" %in% features) {
-    geopi_results$documents <- get_geopi_docs_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, dcmode = doc_mode, gather_date = gather_date)
+    geopi_results$documents <- tryCatch(get_geopi_docs_ef(gdot_pi = gdot_pi, page_scrape = page_scrapes, dcmode = doc_mode, gather_date = gather_date), error = function(e) paste("documents", e))
   }
   if (geometry == TRUE) {
-    geopi_results$geometry <- get_geopi_sf(gdot_pi = gdot_pi)
+    geopi_results$geometry <- tryCatch(get_geopi_sf(gdot_pi = gdot_pi, pi_check = pi_check), error = function(e) paste("geometry", e))
   }
 
   return(geopi_results)
