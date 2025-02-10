@@ -2,6 +2,7 @@
 
 export("%>%")
 export(check_pi)
+export(format_place_gis)
 export(geopi_session)
 export(get_geopi)
 export(get_geopi_docs)
