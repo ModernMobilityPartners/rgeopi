@@ -40,8 +40,6 @@ polite_fetch_rtxt <- memoise::memoise(function(..., user_agent, delay, verbose) 
 #' @param user_agent user agent string
 #' @param force force re-downloading of robots.xtx
 #' @param verbose logical
-#'
-#' @return
 check_rtxt <- function(url, delay, user_agent, force, verbose) {
   url_parsed <- httr::parse_url(url)
   host_url <- paste0(url_parsed$scheme, "://", url_parsed$hostname)
