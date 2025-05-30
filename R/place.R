@@ -1,8 +1,14 @@
 #' Format sf for PLA+CE GIS Tool
 #'
 #' @param project_sf sf object of project geometry with Project ID in column "Project.ID" - Result of `get_geopi_sf`
+#' @param project_overview Optional. Dataframe of project overview from [get_geopi_overview()]` or 'overview' feature from [get_geopi()]
 #'
 #' @returns sf object
+#' @examples
+#'  \dontrun{
+#'    project_info <- get_geopi_ef(gdot_pi = "0011699", features = "overview", geometry = TRUE)
+#'    project_shp <- format_place_gis(project_sf = project_info$geometry, project_overview = project_info$overview)
+#'  }
 #' @export
 format_place_gis <- function(project_sf, project_overview = NULL) {
   if (!is.null(project_overview)) {

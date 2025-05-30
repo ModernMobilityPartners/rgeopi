@@ -4,14 +4,22 @@
 \alias{format_place_gis}
 \title{Format sf for PLA+CE GIS Tool}
 \usage{
-format_place_gis(project_sf)
+format_place_gis(project_sf, project_overview = NULL)
 }
 \arguments{
 \item{project_sf}{sf object of project geometry with Project ID in column "Project.ID" - Result of `get_geopi_sf`}
+
+\item{project_overview}{Optional. Dataframe of project overview from [get_geopi_overview()]` or 'overview' feature from [get_geopi()]}
 }
 \value{
 sf object
 }
 \description{
 Format sf for PLA+CE GIS Tool
+}
+\examples{
+ \dontrun{
+   project_info <- get_geopi_ef(gdot_pi = "0011699", features = "overview", geometry = TRUE)
+   project_shp <- format_place_gis(project_sf = project_info$geometry, project_overview = project_info$overview)
+ }
 }
